@@ -91,9 +91,9 @@ block content
                   $("#btnVolume").text('Bittrex (BTC)');
                   $("#btnVolume").attr('name', 'bittrex');
                 } else if ('#{volume}' === 'cryptsy') {
-                  data.datasets[1].label = 'Crypsty (BTC)';
+                  data.datasets[1].label = 'Cryptsy (LTC)';
                   data.datasets[1].data.push(flo[i]['alexandria-history-record-datapoint'].cryptsy);
-                  $("#btnVolume").text('Cryptsy (BTC)');
+                  $("#btnVolume").text('Cryptsy (LTC)');
                   $("#btnVolume").attr('name', 'cryptsy');
                 } else if ('#{volume}' === 'poloniex') {
                   data.datasets[1].label = 'Poloniex (BTC)';
@@ -178,9 +178,9 @@ block content
               li
                 a.volumeSelect(href='#', name='bittrex') Bittrex (BTC)
               li
-                a.volumeSelect(href='#', name='cryptsy') Cryptsy (BTC)
-              li
                 a.volumeSelect(href='#', name='poloniex') Poloniex (BTC)
+              li
+                a.volumeSelect(href='#', name='cryptsy') Cryptsy (LTC)
         | Start Date:
         .form-group
           #minDate.datetimepicker.input-group.date
