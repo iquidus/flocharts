@@ -4,33 +4,21 @@ var jsonfile = require('jsonfile');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { active: 'index', minDate: false, maxDate: false });
+  res.render('index', { active: 'index', minDate: -1, maxDate: -1, price: 'btc', volume: 'daily' });
 });
 
-router.post('/', function(req, res, next) {
+router.get('/:price/:volume/:mindate/:maxdate', function(req,res, next) {
+  res.render('index', { active: 'index', minDate: req.params['mindate'], maxDate: req.params['maxdate'], price: req.params['price'], volume: req.params['volume']});
+});
+
+router.get('/bitcoin', function(req, res, next) {
+  res.render('btc', { active: 'bitcoin', minDate: false, maxDate: false });
+});
+
+router.post('/bitcoin', function(req, res, next) {
   var minDate = req.body.minDateInput;
   var maxDate = req.body.maxDateInput;
-  res.render('index', { active: 'index', minDate: minDate, maxDate: maxDate });
-});
-
-router.get('/usd', function(req, res, next) {
-  res.render('usd', { active: 'usd', minDate: false, maxDate: false });
-});
-
-router.post('/usd', function(req, res, next) {
-  var minDate = req.body.minDateInput;
-  var maxDate = req.body.maxDateInput;
-  res.render('usd', { active: 'usd', minDate: minDate, maxDate: maxDate });
-});
-
-router.get('/btc', function(req, res, next) {
-  res.render('btc', { active: 'btc', minDate: false, maxDate: false });
-});
-
-router.post('/btc', function(req, res, next) {
-  var minDate = req.body.minDateInput;
-  var maxDate = req.body.maxDateInput;
-  res.render('btc', { active: 'btc', minDate: minDate, maxDate: maxDate });
+  res.render('btc', { active: 'bitcoin', minDate: minDate, maxDate: maxDate });
 });
 
 router.get('/api/marketchartdata', function(req, res, next) {

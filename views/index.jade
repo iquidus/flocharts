@@ -20,14 +20,55 @@ block content
       }); 
       $("#minDate").on("dp.change", function (e) {
         $('#maxDate').data("DateTimePicker").minDate(e.date);
+        //update_url();
       });
       $("#maxDate").on("dp.change", function (e) {
         $('#minDate').data("DateTimePicker").maxDate(e.date);
+        //update_url();
       });
-      Chart.defaults.global.responsive = true;
-      function update_chart(){
-        var minDate = moment('#{minDate}', 'Do MMMM YYYY  - HH:mm:ss').valueOf();
-        var maxDate = moment('#{maxDate}', 'Do MMMM YYYY  - HH:mm:ss').valueOf();
+      $(".priceSelect").click(function(e){
+        e.preventDefault();
+        $("#btnPrice").text($(this).text());
+        $("#btnPrice").attr('name', $(this).attr('name'));
+        //update_url();
+      });
+      $(".volumeSelect").click(function(e){
+        e.preventDefault();
+        $("#btnVolume").text($(this).text());
+        $("#btnVolume").attr('name', $(this).attr('name'));
+        //update_url();
+      });
+      $('#apply').click(function(e){
+        e.preventDefault();
+        var sdate = moment($('#minDateInput').val(), 'Do MMMM YYYY  - HH:mm:ss').valueOf();
+        var edate = moment($('#maxDateInput').val(), 'Do MMMM YYYY  - HH:mm:ss').valueOf();
+        location.href = '/' + $("#btnPrice").attr('name') + '/' + $("#btnVolume").attr('name') + '/' + sdate + '/' + edate;
+      });
+      var data = {
+        labels: [],
+        datasets: [{
+            type: 'line',
+            label: "Weighted Price (μBTC)",
+            borderColor: "rgba(0,191,255,0.8)",
+            backgroundColor: "rgba(0,191,255,0.0)",
+            pointBorderColor: "rgba(0,191,255,0.8)",
+            pointBackgroundColor: "rgba(0,191,255,0.8)",
+            pointBorderWidth: 1,
+            yAxisID: "y-axis-1",
+            data: []
+        }, {
+            label: "Daily Volume (FLO)",
+            borderColor: "rgba(34,34,34,0.2)",
+            borderWidth: 2,
+            backgroundColor: "rgba(34,34,34,0.1)",
+            yAxisID: "y-axis-2",
+            data: []
+        }]
+      };
+
+      function update_chartdata(){
+        var minDate = '#{minDate}';
+        var maxDate = '#{maxDate}';
         console.log(minDate);
         $.ajax({url: '/api/marketchartdata', success: function(flo){
           flo = flo.reverse();
@@ -35,23 +76,44 @@ block content
             if (minDate < 0 || minDate < flo[i]['alexandria-history-record-datapoint'].timestamp * 1000) {
               if (maxDate < 0 || (maxDate / 1000) > flo[i]['alexandria-history-record-datapoint'].timestamp) {
                 data.labels.push(moment(flo[i]['alexandria-history-record-datapoint'].timestamp * 1000).format('Do MMMM YYYY - HH:mm:ss'));
-                data.datasets[0].data.push(flo[i]['alexandria-history-record-datapoint'].USD);
-                data.datasets[1].data.push(flo[i]['alexandria-history-record-datapoint'].cryptsy);
-                data.datasets[2].data.push(flo[i]['alexandria-history-record-datapoint'].poloniex);
-                data.datasets[3].data.push(flo[i]['alexandria-history-record-datapoint'].bittrex);
-                data.datasets[4].data.push(flo[i]['alexandria-history-record-datapoint'].weighted);
-                data.datasets[5].data.push(parseFloat(flo[i]['alexandria-history-record-datapoint']['daily-volume']));
+                if ('#{price}' === 'usd') { 
+                  data.datasets[0].label = 'USD (Cents)';
+                  data.datasets[0].data.push(flo[i]['alexandria-history-record-datapoint'].USD * 100);
+                  $("#btnPrice").text('USD (Cents)');
+                  $("#btnPrice").attr('name', 'usd');
+                } else {
+                  data.datasets[0].label = 'Weighted (μBTC)';
+                  data.datasets[0].data.push((flo[i]['alexandria-history-record-datapoint'].weighted * 1000000).toFixed(2));
+                }
+                if ('#{volume}' === 'bittrex') {
+                  data.datasets[1].label = 'Bittrex (BTC)';
+                  data.datasets[1].data.push(flo[i]['alexandria-history-record-datapoint'].bittrex);
+                  $("#btnVolume").text('Bittrex (BTC)');
+                  $("#btnVolume").attr('name', 'bittrex');
+                } else if ('#{volume}' === 'cryptsy') {
+                  data.datasets[1].label = 'Crypsty (BTC)';
+                  data.datasets[1].data.push(flo[i]['alexandria-history-record-datapoint'].cryptsy);
+                  $("#btnVolume").text('Cryptsy (BTC)');
+                  $("#btnVolume").attr('name', 'cryptsy');
+                } else if ('#{volume}' === 'poloniex') {
+                  data.datasets[1].label = 'Poloniex (BTC)';
+                  data.datasets[1].data.push(flo[i]['alexandria-history-record-datapoint'].poloniex);
+                  $("#btnVolume").text('Poloniex (BTC)');
+                  $("#btnVolume").attr('name', 'poloniex');
+                } else {
+                  data.datasets[1].label = 'Daily Volume (FLO)';
+                  data.datasets[1].data.push(parseFloat(flo[i]['alexandria-history-record-datapoint']['daily-volume']));
+                }
               }
             }
           }
           var ctx = document.getElementById("floMarketData").getContext("2d");
           var lineChart = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: data,
             options: {
               responsive: true,
               hoverMode: 'label',
-              stacked: false,
               scales: {
                 xAxes: [{
                   display: false,
@@ -64,9 +126,11 @@ block content
                   display: true,
                   position: "left",
                   id: "y-axis-1",
+                  stacked: false
                 }, {
                   type: "linear", // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
                   display: true,
+                  stacked: false,
                   position: "right",
                   id: "y-axis-2",
                   // grid line settings
@@ -76,109 +140,61 @@ block content
                 }],
               },
             } 
-          });
-        }});  
-      };  
-      var data = {
-        labels: [],
-        datasets: [{
-            label: "FLO/USD",
-            borderColor: "rgba(0,0,0,0.0)",
-            backgroundColor: "rgba(0,0,0,0.0)",
-            pointBorderColor: "rgba(0,0,0,0.0)",
-            pointBackgroundColor: "rgba(0,0,0,0.0)",
-            pointBorderWidth: 1,
-            yAxisID: "y-axis-1",
-            data: []
-        }, {
-            label: "Cryptsy",
-            borderColor: "rgba(255,69,0,0.8)",
-            backgroundColor: "rgba(255,69,0,0.0)",
-            pointBorderColor: "rgba(255,69,0,0.8)",
-            pointBackgroundColor: "rgba(255,69,0,0.8)",
-            pointBorderWidth: 1,
-            yAxisID: "y-axis-1",
-            data: []
-        }, {
-            label: "Poloniex",
-            borderColor: "rgba(148,0,211,0.8)",
-            backgroundColor: "rgba(148,0,211,0.0)",
-            pointBorderColor: "rgba(148,0,211,0.8)",
-            pointBackgroundColor: "rgba(148,0,211,0.8)",
-            pointBorderWidth: 1,
-            yAxisID: "y-axis-1",
-            data: []
-        }, {
-            label: "Bittrex",
-            borderColor: "rgba(0,191,255,0.8)",
-            backgroundColor: "rgba(0,191,255,0.0)",
-            pointBorderColor: "rgba(0,191,255,0.8)",
-            pointBackgroundColor: "rgba(0,191,255,0.8)",
-            pointBorderWidth: 1,
-            yAxisID: "y-axis-1",
-            data: []
-        }, {
-            label: "Weighted Price",
-            borderColor: "rgba(0,0,0,0.0)",
-            backgroundColor: "rgba(0,0,0,0.0)",
-            pointBorderColor: "rgba(0,0,0,0.0)",
-            pointBackgroundColor: "rgba(0,0,0,0.0)",
-            pointBorderWidth: 1,
-            yAxisID: "y-axis-1",
-            data: []
-        }, {
-            label: "Daily Volume",
-            borderColor: "rgba(190,190,190,0.8)",
-            backgroundColor: "rgba(190,190,190,0.1)",
-            pointBorderColor: "rgba(190,190,190,0.8)",
-            pointBackgroundColor: "rgba(190,190,190,0.8)",
-            pointBorderWidth: 1,
-            yAxisID: "y-axis-2",
-            data: []
-        }]
+          }); 
+        }});
       };
-
-      update_chart();
+      update_chartdata();  
     });
   .col-md-10
     .container-canvas
       canvas#floMarketData
   .col-md-2
+    //form(method='post', action='/')
     .panel.panel-default(style='margin-top:20px;')
       .panel-heading
-        strong Legend
+        span.fa.fa-line-chart.icon-left
+        strong Chart
       .panel-body
-        ul.line-legend
-          li 
-            span(style='background-color:rgba(0,191,255,0.8);')
-            | Bittrex
-          li 
-            span(style='background-color:rgba(148,0,211,0.8);')
-            | Poloniex
-          li 
-            span(style='background-color:rgba(255,69,0,0.8);')
-            | Cryptsy
-          li 
-            span(style='background-color:rgba(190,190,190,0.8);')
-            | Daily Volume
-    form(method='post', action='/')
-      .panel.panel-default(style='margin-top:20px;')
-        .panel-heading
-          strong Filter
-        .panel-body
-          | Start Date:
-          .form-group
-            #minDate.datetimepicker.input-group.date
-              input#minDateInput.form-control(type='text', name='minDateInput')
-              span.input-group-addon(style='min-width:20px;')
-                span.fa.fa-calendar
-          
-          | End Date:
-          .form-group
-            #maxDate.datetimepicker.input-group.date
-              input#maxDateInput.form-control(type='text', name='maxDateInput')
-              span.input-group-addon(style='min-width:20px;')
-                span.fa.fa-calendar  
-        .panel-footer.text-right
-          button.btn.btn-default(type='submit') Apply
+        .row(style='padding:0 15px;')
+          | Price:
+          .btn-group.btn-block(style='margin-bottom:15px;')
+            button#btnPrice.col-sm-10.btn.btn-primary(type='button', name='btc') Weighted (μBTC)    
+            button.col-sm-2.btn.btn-primary.dropdown-toggle(type='button', data-toggle='dropdown', aria-expanded='false')
+              span.caret
+            ul.dropdown-menu.multi-column(role='menu')
+              li
+                a.priceSelect(href='#', name='btc') Weighted (μBTC)
+              li
+                a.priceSelect(href='#', name='usd') USD (Cents)
+        .row(style='padding:0 15px;')
+          | Volume:
+          .btn-group.btn-block(style='margin-bottom:15px;')
+            button#btnVolume.col-sm-10.btn.btn-primary(type='button', name='daily') Daily Volume (FLO)    
+            button.col-sm-2.btn.btn-primary.dropdown-toggle(type='button', data-toggle='dropdown', aria-expanded='false')
+              span.caret
+            ul.dropdown-menu.multi-column(role='menu')
+              li
+                a.volumeSelect(href='#', name='daily') Daily Volume (FLO)
+              li
+                a.volumeSelect(href='#', name='bittrex') Bittrex (BTC)
+              li
+                a.volumeSelect(href='#', name='cryptsy') Cryptsy (BTC)
+              li
+                a.volumeSelect(href='#', name='poloniex') Poloniex (BTC)
+        | Start Date:
+        .form-group
+          #minDate.datetimepicker.input-group.date
+            input#minDateInput.form-control(type='text', name='minDateInput')
+            span.input-group-addon(style='min-width:20px;')
+              span.fa.fa-calendar
+        
+        | End Date:
+        .form-group
+          #maxDate.datetimepicker.input-group.date
+            input#maxDateInput.form-control(type='text', name='maxDateInput')
+            span.input-group-addon(style='min-width:20px;')
+              span.fa.fa-calendar  
+      .panel-footer.text-right
+        //button.btn.btn-default(type='submit') Apply
+        a#apply.btn.btn-primary(href='#') Apply
     

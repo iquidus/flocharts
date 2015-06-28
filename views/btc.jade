@@ -48,7 +48,7 @@ block content
           }
           var ctx = document.getElementById("floMarketData").getContext("2d");
           var lineChart = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: data,
             options: {
               responsive: true,
@@ -84,6 +84,7 @@ block content
       var data = {
         labels: [],
         datasets: [{
+            type: 'line',
             label: "BTC/USD",
             borderColor: "rgba(0,191,255,0.8)",
             backgroundColor: "rgba(0,128,0,0.0)",
@@ -94,14 +95,13 @@ block content
             data: []
         }, {
             label: "Volume (BTC)",
-            borderColor: "rgba(190,190,190,0.8)",
-            backgroundColor: "rgba(190,190,190,0.1)",
-            pointBorderColor: "rgba(190,190,190,0.8)",
-            pointBackgroundColor: "rgba(190,190,190,0.8)",
-            pointBorderWidth: 1,
+            borderColor: "rgba(34,34,34,0.2)",
+            borderWidth: 2,
+            backgroundColor: "rgba(34,34,34,0.1)",
             yAxisID: "y-axis-2",
             data: []
         }, {
+            type: 'line',
             label: "Bid",
             borderColor: "rgba(0,0,0,0.0)",
             backgroundColor: "rgba(0,0,0,0.0)",
@@ -111,6 +111,7 @@ block content
             yAxisID: "y-axis-1",
             data: []
         }, {
+            type: 'line',
             label: "Ask",
             borderColor: "rgba(0,0,0,0.0)",
             backgroundColor: "rgba(0,0,0,0.0)",
@@ -120,6 +121,7 @@ block content
             yAxisID: "y-axis-1",
             data: []
         }, {
+            type: 'line',
             label: "24h Avg",
             borderColor: "rgba(0,0,0,0.0)",
             backgroundColor: "rgba(0,0,0,0.0)",
@@ -148,7 +150,7 @@ block content
           li 
             span(style='background-color:rgba(90,90,90,0.8);')
             | Volume (BTC)
-    form(method='post', action='/btc')
+    form(method='post', action='/bitcoin')
       .panel.panel-default(style='margin-top:20px;')
         .panel-heading
           strong Filter
