@@ -78,7 +78,7 @@ block content
                 data.labels.push(moment(flo[i]['alexandria-history-record-datapoint'].timestamp * 1000).format('Do MMMM YYYY - HH:mm:ss'));
                 if ('#{price}' === 'usd') { 
                   data.datasets[0].label = 'USD (Cents)';
-                  data.datasets[0].data.push(flo[i]['alexandria-history-record-datapoint'].USD * 100);
+                  data.datasets[0].data.push((flo[i]['alexandria-history-record-datapoint'].USD * 100).toFixed(3));
                   $("#btnPrice").text('USD (Cents)');
                   $("#btnPrice").attr('name', 'usd');
                 } else {
